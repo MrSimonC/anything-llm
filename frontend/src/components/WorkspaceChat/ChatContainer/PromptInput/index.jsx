@@ -32,6 +32,7 @@ export default function PromptInput({
   const formRef = useRef(null);
   const textareaRef = useRef(null);
   const [_, setFocused] = useState(false);
+  const [selectedPromptIndex, setSelectedPromptIndex] = useState(-1); // P69d1
 
   // To prevent too many re-renders we remotely listen for updates from the parent
   // via an event cycle. Otherwise, using message as a prop leads to a re-render every
@@ -144,6 +145,42 @@ export default function PromptInput({
 
   const watchForSlash = debounce(checkForSlash, 300);
   const watchForAt = debounce(checkForAt, 300);
+
+  // Pa3b6
+  const handleKeyDown = (e) => {
+    if (showSlashCommand) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedPromptIndex((prevIndex) =>
+          prevIndex < 4 ? prevIndex + 1 : prevIndex
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedPromptIndex((prevIndex) =>
+          prevIndex > 0 ? prevIndex - 1 : prevIndex
+        );
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (selectedPromptIndex >= 0) {
+          const selectedPrompt = document.querySelector(
+            `.slash-command-item-${selectedPromptIndex}`
+          );
+          if (selectedPrompt) {
+            selectedPrompt.click();
+          }
+        }
+      } else if (e.key === "Escape") {
+        setShowSlashCommand(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showSlashCommand, selectedPromptIndex]);
 
   return (
     <div className="w-full fixed md:absolute bottom-0 left-0 z-10 md:z-0 flex justify-center items-center">
